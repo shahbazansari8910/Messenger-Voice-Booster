@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Voice Booster</title>
+
+  <style>
+    body {
+      width: 300px;
+      margin: 0;
+      padding: 20px;
+      background: #111827;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 20px;
+    }
+
+    .row {
+      margin: 18px 0;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    button {
+      width: 100%;
+      padding: 11px;
+      border: 0;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .status {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #9ca3af;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>🎙️ Messenger Voice Booster</h2>
+
+  <div class="row">
+    <label>
+      <input type="checkbox" id="enabled">
+      Enable Voice Booster
+    </label>
+  </div>
+
+  <div class="row">
+    <label>
+      Boost:
+      <strong id="boostValue">2.5x</strong>
+    </label>
+
+    <input
+      type="range"
+      id="boost"
+      min="1"
+      max="8"
+      step="0.1"
+      value="2.5"
+    >
+  </div>
+
+  <button id="start">
+    Start Voice Processor
+  </button>
+
+  <div class="status">
+    Low-volume speech is dynamically boosted.
+  </div>
+
+<script>
+const enabled = document.getElementById("enabled");
+const boost = document.getElementById("boost");
+const boostValue = document.getElementById("boostValue");
+const start = document.getElementById("start");
+
+chrome.storage.local.get(
+  ["enabled", "boost"],
+  data => {
+    enabled.checked = data.enabled !== false;
+
+    boost.value = data.boost || 2.5;
+
+    boostValue.textContent =
+      Number(boost.value).toFixed(1) + "x";
+  }
+);
+
+enabled.addEventListener("change", () => {
+  chrome.storage.local.set({
+    enabled: enabled.checked
+  });
+
+  chrome.tabs.query(
+    { active: true, currentWindow: true },
+    tabs => {
+      if (!tabs[0]) return;
+
+      chrome.tabs.sendMessage(
+        tabs[0].id,
+        {
+          type: "SET_ENABLED",
+          value: enabled.checked
+        }
+      );
+    }
+  );
+});
+
+boost.addEventListener("input", () => {
+  const value = Number(boost.value);
+
+  boostValue.textContent =
+    value.toFixed(1) + "x";
+
+  chrome.storage.local.set({
+    boost: value
+  });
+
+  chrome.tabs.query(
+    { active: true, currentWindow: true },
+    tabs => {
+      if (!tabs[0]) return;
+
+      chrome.tabs.sendMessage(
+        tabs[0].id,
+        {
+          type: "SET_BOOST",
+          value
+        }
+      );
+    }
+  );
+});
+
+start.addEventListener("click", () => {
+  chrome.tabs.query(
+    { active: true, currentWindow: true },
+    tabs => {
+      if (!tabs[0]) return;
+
+      chrome.tabs.sendMessage(
+        tabs[0].id,
+        { type: "START" }
+      );
+
+      start.textContent = "Processor Started ✓";
+    }
+  );
+});
+</script>
+
+</body>
+</html>
