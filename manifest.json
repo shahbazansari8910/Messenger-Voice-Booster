@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Messenger Voice Booster",
+  "version": "1.0.0",
+  "description": "Boosts and dynamically processes microphone voice for Messenger Web calls.",
+  "permissions": [
+    "tabCapture",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://www.messenger.com/*",
+    "https://www.facebook.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Messenger Voice Booster",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.messenger.com/*",
+        "https://www.facebook.com/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
